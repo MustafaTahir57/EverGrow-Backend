@@ -10,29 +10,41 @@ app.use(express.json());
 const TOKEN_URL =
     "https://api.geckoterminal.com/api/v2/networks/bsc/tokens/0xc3CC4dBF23055af2b87b5E2C85d3c197d04D9E72";
 
+let cachedPrice = null;
+let lastFetched = null;
+const CACHE_DURATION = 60 * 1000; // 60 seconds
+
 app.get("/api/egc-price", async (req, res) => {
     console.log('📌 /api/egc-price called');
+
+    // Return cached price if still fresh
+    if (cachedPrice && lastFetched && (Date.now() - lastFetched < CACHE_DURATION)) {
+        console.log('✅ Returning cached price');
+        return res.json({ price: cachedPrice, cached: true });
+    }
+
     try {
         const response = await axios.get(TOKEN_URL, {
-            headers: {
-                Accept: "application/json",
-            },
+            headers: { Accept: "application/json" }
         });
-
-        console.log("response status:", response.status);
 
         const price = response.data?.data?.attributes?.price_usd;
-        console.log("price:", price); // ✅ was "data" before (undefined variable)
 
-        res.json({
-            price: price || 0,
-            raw: response.data,
-        });
+        // Update cache
+        cachedPrice = price || 0;
+        lastFetched = Date.now();
+
+        res.json({ price: cachedPrice, cached: false });
     } catch (err) {
-        console.error("❌ Error:", err.message, err); // ✅ was crossOriginIsolated.err (doesn't exist)
-        res.status(500).json({
-            error: "Failed to fetch price",
-        });
+        console.error("❌ Error:", err.message);
+
+        // If rate limited but we have a cached value, return it
+        if (err.response?.status === 429 && cachedPrice) {
+            console.log('⚠️ Rate limited, returning stale cache');
+            return res.json({ price: cachedPrice, cached: true, stale: true });
+        }
+
+        res.status(500).json({ error: "Failed to fetch price" });
     }
 });
 
