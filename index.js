@@ -29,6 +29,7 @@ app.get("/api/egc-price", async (req, res) => {
             raw: response.data,
         });
     } catch (err) {
+        crossOriginIsolated.err("Error", err.message, err)
         res.status(500).json({
             error: "Failed to fetch price",
         });
