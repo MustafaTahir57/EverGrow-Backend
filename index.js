@@ -19,17 +19,17 @@ app.get("/api/egc-price", async (req, res) => {
             },
         });
 
-        console.log("response", response.status, response)
+        console.log("response status:", response.status);
 
         const price = response.data?.data?.attributes?.price_usd;
-        console.log("data", data)
+        console.log("price:", price); // ✅ was "data" before (undefined variable)
 
         res.json({
             price: price || 0,
             raw: response.data,
         });
     } catch (err) {
-        crossOriginIsolated.err("Error", err.message, err)
+        console.error("❌ Error:", err.message, err); // ✅ was crossOriginIsolated.err (doesn't exist)
         res.status(500).json({
             error: "Failed to fetch price",
         });
