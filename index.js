@@ -11,6 +11,7 @@ const TOKEN_URL =
     "https://api.geckoterminal.com/api/v2/networks/bsc/tokens/0xc3CC4dBF23055af2b87b5E2C85d3c197d04D9E72";
 
 app.get("/api/egc-price", async (req, res) => {
+    console.log('📌 /api/egc-price called');
     try {
         const response = await axios.get(TOKEN_URL, {
             headers: {
@@ -21,6 +22,7 @@ app.get("/api/egc-price", async (req, res) => {
         console.log("response", response.status, response)
 
         const price = response.data?.data?.attributes?.price_usd;
+        console.log("data", data)
 
         res.json({
             price: price || 0,
