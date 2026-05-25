@@ -18,6 +18,8 @@ app.get("/api/egc-price", async (req, res) => {
             },
         });
 
+        console.log("response", response.status, response)
+
         const price = response.data?.data?.attributes?.price_usd;
 
         res.json({
