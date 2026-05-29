@@ -44,7 +44,7 @@ app.get("/api/egc-price", async (req, res) => {
             return res.json({ price: cachedPrice, cached: true, stale: true });
         }
 
-        res.status(500).json({ error: "Failed to fetch price" });
+        res.status(500).json({ error: "Failed to fetch price" + err });
     }
 });
 
