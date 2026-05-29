@@ -12,7 +12,7 @@ const TOKEN_URL =
 
 let cachedPrice = null;
 let lastFetched = null;
-const CACHE_DURATION = 60 * 1000; // 60 seconds
+const CACHE_DURATION = 5 * 60 * 1000; // 5 mins
 
 app.get("/api/egc-price", async (req, res) => {
     console.log('📌 /api/egc-price called');
@@ -38,13 +38,20 @@ app.get("/api/egc-price", async (req, res) => {
     } catch (err) {
         console.error("❌ Error:", err.message);
 
-        // If rate limited but we have a cached value, return it
-        if (err.response?.status === 429 && cachedPrice) {
-            console.log('⚠️ Rate limited, returning stale cache');
-            return res.json({ price: cachedPrice, cached: true, stale: true });
+        // Handle rate limit
+        if (err.response?.status === 429) {
+            console.log("⚠️ Rate limited");
+
+            return res.json({
+                price: cachedPrice || 0,
+                cached: true,
+                stale: true
+            });
         }
 
-        res.status(500).json({ error: "Failed to fetch price" + err });
+        res.status(500).json({
+            error: err.message
+        });
     }
 });
 
